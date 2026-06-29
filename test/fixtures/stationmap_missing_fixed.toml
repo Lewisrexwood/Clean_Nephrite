@@ -1,0 +1,20 @@
+# Intentionally incomplete stationmap — maps all thermal and hydro fixture
+# stations but omits ToyCogen_NI (a fixed station) to verify that
+# build_stationmap loud-fails when a fixed station is missing from the config.
+
+[station_to_hub]
+# Thermal stations
+"ToyGas_NI"    = "OTA"
+"ToyCoal_NI"   = "OTA"
+"ToyDiesel_SI" = "BEN"
+
+# Hydro stations
+"ToyTaupo_gen"  = "WKM"
+"ToyWhaka_gen"  = "WKM"
+"ToyPukaki_gen" = "BEN"
+"ToyBenmore_gen" = "BEN"
+
+# ToyCogen_NI (fixed station) is deliberately omitted to trigger the loud-fail guard.
+
+[poc_to_reservoir]
+"TST2201" = "Lake_ToyTaupo"

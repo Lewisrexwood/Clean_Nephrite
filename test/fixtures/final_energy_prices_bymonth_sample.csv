@@ -1,0 +1,5 @@
+TradingDate,TradingPeriod,PointOfConnection,DollarsPerMegawattHour
+2022-01-05,1,OTA2201,101.50
+2022-01-05,2,BEN2201,95.25
+2022-01-06,1,OTA2201,110.00
+2022-01-06,2,BEN2201,99.99

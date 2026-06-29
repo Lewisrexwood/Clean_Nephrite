@@ -1,0 +1,5 @@
+GENERATOR,HEAD_WATER_FROM,TAIL_WATER_TO,POWER_SYSTEM_NODE,CAPACITY,SPECIFIC_POWER,SPILLWAY_MAX_FLOW
+ToyTaupo_gen,Lake_ToyTaupo,Lake_ToyWhaka,NI,100,1.75,na
+ToyWhaka_gen,Lake_ToyWhaka,ToyWhaka_tail,NI,50,0.40,na
+ToyPukaki_gen,Lake_ToyPukaki,Lake_ToyBenmore,SI,200,0.82,3400
+ToyBenmore_gen,Lake_ToyBenmore,ToyBenmore_tail,SI,150,0.60,2000

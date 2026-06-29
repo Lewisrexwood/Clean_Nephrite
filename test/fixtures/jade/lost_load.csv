@@ -1,0 +1,7 @@
+NODE,ISLAND,SECTOR,SEGMENT,PROPORTION,BOUND,COST
+NI,NI,industrial,low,0.1,0.25,530
+NI,NI,commercial,low,0.3,0.25,5290
+NI,NI,residential,low,0.6,0.5,10580
+SI,SI,industrial,low,0.1,0.25,530
+SI,SI,commercial,low,0.3,0.25,5290
+SI,SI,residential,low,0.6,0.5,10580

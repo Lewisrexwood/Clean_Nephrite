@@ -1,0 +1,14 @@
+# Intentionally incomplete stationmap — omits ToyDiesel_SI so that
+# build_stationmap loud-fails with an "unmapped stations" error.
+
+[station_to_hub]
+"ToyGas_NI"     = "OTA"
+"ToyCoal_NI"    = "OTA"
+# ToyDiesel_SI is deliberately omitted to trigger the loud-fail guard
+"ToyTaupo_gen"  = "WKM"
+"ToyWhaka_gen"  = "WKM"
+"ToyPukaki_gen" = "BEN"
+"ToyBenmore_gen" = "BEN"
+
+[poc_to_reservoir]
+"TST2201" = "Lake_ToyTaupo"

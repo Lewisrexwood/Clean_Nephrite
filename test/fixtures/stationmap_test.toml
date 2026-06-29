@@ -1,0 +1,21 @@
+# Test stationmap config — maps all fixture JADE stations to hubs,
+# and one fixture POC to a fixture reservoir.
+
+[station_to_hub]
+# Thermal stations (NI node → OTA hub; SI node → BEN hub)
+"ToyGas_NI"    = "OTA"
+"ToyCoal_NI"   = "OTA"
+"ToyDiesel_SI" = "BEN"
+
+# Fixed stations (cogen/geothermal must-run)
+"ToyCogen_NI"   = "WKM"
+
+# Hydro stations (NI river chain → WKM; SI river chain → BEN)
+"ToyTaupo_gen"  = "WKM"
+"ToyWhaka_gen"  = "WKM"
+"ToyPukaki_gen" = "BEN"
+"ToyBenmore_gen" = "BEN"
+
+[poc_to_reservoir]
+# Toy offer-POC → JADE reservoir (used in water-value anchor tests)
+"TST2201" = "Lake_ToyTaupo"

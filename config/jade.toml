@@ -1,0 +1,145 @@
+# JADE input dataset vintage (EMI Expected Water Values). Pinned for
+# reproducibility; refresh deliberately via scripts/fetch_jade.jl. The dataset
+# is tracked under data/static/jade/. Carbon price is a Phase-1 assumption held
+# over the horizon (NZ ETS spot at the snapshot; override via what-if later).
+vintage = "2025-W52"
+base_url = "https://www.emi.ea.govt.nz/Wholesale/Datasets/Expected%20water%20values/2025/Week%2052/Inputs/data_files/202512250609"
+carbon_price_nzd_per_tonne = 60.0
+
+files = [
+  "thermal_stations.csv",
+  "thermal_fuel_costs.csv",
+  "hydro_stations.csv",
+  "hydro_arcs.csv",
+  "reservoirs.csv",
+  "reservoir_limits.csv",
+  "fixed_stations.csv",
+  "station_outages.csv",
+  "terminal_water_value.csv",
+  "lost_load.csv",
+]
+
+# Column-name overrides per file so Task 2-6 loaders reference real column names.
+# Verified from DuckDB read_csv_auto on the downloaded files (2026-06-18).
+
+[columns.thermal_stations]
+# 10 rows: NI thermal generators
+# heat_rate in GJ/MWh; capacity in MW; omcost in $/MWh
+name       = "GENERATOR"
+node       = "NODE"
+fuel       = "FUEL"
+heat_rate  = "HEAT_RATE"
+capacity   = "CAPACITY"
+omcost     = "OMCOST"
+start_year = "START_YEAR"
+start_week = "START_WEEK"
+end_year   = "END_YEAR"
+end_week   = "END_WEEK"
+
+[columns.thermal_fuel_costs]
+# WARNING: non-standard 3-row preamble before data rows. Do NOT use read_csv_auto.
+# Raw file layout (rows 1-3 are preamble, row 4+ are data):
+#   Row 1: ,,coal,diesel,gas,CO2           <- column label hints only
+#   Row 2: CO2_CONTENT,,0.09218,0.06939,0.05397,  <- CO2 intensity (tCO2/GJ) per fuel
+#   Row 3: YEAR,WEEK,,,,                   <- partial header (fuel name cells are blank)
+#   Row 4+: 2010,1,5.89,28.58,7.2,20.25   <- data rows
+#
+# Canonical DuckDB load recipe (skip=3, header=false, supply all column names):
+#   read_csv('thermal_fuel_costs.csv', skip=3, header=false,
+#            columns={'YEAR':'INTEGER','WEEK':'INTEGER','coal':'DOUBLE',
+#                     'diesel':'DOUBLE','gas':'DOUBLE','CO2':'DOUBLE'})
+#
+# To extract CO2 intensity coefficients for SRMC calculations, read the raw
+# file separately and parse row 2 (index 1, 0-based): coal=0.09218,
+# diesel=0.06939, gas=0.05397 tCO2/GJ. 884 data rows spanning 2010-W1 to
+# 2026-W52. Fuel price columns are in NZD/GJ.
+year    = "YEAR"
+week    = "WEEK"
+coal    = "coal"
+diesel  = "diesel"
+gas     = "gas"
+co2     = "CO2"
+# CO2 intensity coefficients (tCO2/GJ) — from preamble row 2:
+co2_intensity_coal   = 0.09218
+co2_intensity_diesel = 0.06939
+co2_intensity_gas    = 0.05397
+
+[columns.hydro_stations]
+# 26 rows: one row per hydro generator (no multi-segment turbine rows).
+# SPECIFIC_POWER is MW/cumec (marginal power output per unit flow — proxy for
+# effective head × efficiency). SPILLWAY_MAX_FLOW uses "na" for no spillway cap.
+name              = "GENERATOR"
+head_water_from   = "HEAD_WATER_FROM"
+tail_water_to     = "TAIL_WATER_TO"
+node              = "POWER_SYSTEM_NODE"
+capacity          = "CAPACITY"
+specific_power    = "SPECIFIC_POWER"
+spillway_max_flow = "SPILLWAY_MAX_FLOW"
+
+[columns.hydro_arcs]
+# 19 rows: river-chain arcs between reservoirs / tail-water nodes.
+# ORIG/DEST are reservoir or tail-water node names matching hydro_stations.
+# MIN_FLOW / MAX_FLOW in cumecs; "na" means unconstrained.
+orig     = "ORIG"
+dest     = "DEST"
+min_flow = "MIN_FLOW"
+max_flow = "MAX_FLOW"
+
+[columns.reservoirs]
+# 7 rows: the modelled reservoirs with initial state.
+# INI_STATE is stored energy in GWh-equivalent.
+name          = "RESERVOIR"
+inflow_region = "INFLOW_REGION"
+ini_state     = "INI_STATE"
+
+[columns.reservoir_limits]
+# 884 rows (YEAR × WEEK combinations, 2010-2026). Wide-format: each lake has
+# its own MAX_LEVEL, MIN_1_LEVEL, MIN_1_PENALTY columns named as
+# "<Lake_Name> MAX_LEVEL" etc. (space-separated, not underscore).
+# Lakes present: Lake_Hawea, Lake_Ohau, Lake_Pukaki, Lake_Taupo, Lake_Tekapo,
+#   Lake_Waikaremoana, Lakes_Manapouri_Te_Anau.
+# Units: GWh-equivalent (same scale as INI_STATE in reservoirs.csv).
+year   = "YEAR"
+week   = "WEEK"
+# Limit columns follow pattern: "<RESERVOIR> MAX_LEVEL", "<RESERVOIR> MIN_1_LEVEL",
+# "<RESERVOIR> MIN_1_PENALTY"
+
+[columns.fixed_stations]
+# 33963 rows: weekly generation dispatch for must-run stations.
+# ~39 distinct stations: Glenbrook_cogen, Kapuni_cogen, Kinleith_cogen ...and ~36 more:
+# geothermal, wind, run-of-river, regional aggregates.
+# PEAK/SHOULDER/OFFPEAK values in MW; per-week must-run = mean of the three blocks,
+# averaged across years for each week-of-year (see FixedStation.weekly_mw).
+station  = "STATION"
+node     = "NODE"
+year     = "YEAR"
+week     = "WEEK"
+peak     = "PEAK"
+shoulder = "SHOULDER"
+offpeak  = "OFFPEAK"
+
+[columns.station_outages]
+# 884 rows (YEAR × WEEK). Wide-format: YEAR, WEEK then one column per station
+# (0 = available, 1 = on outage). 36 station columns matching hydro_stations
+# and thermal_stations names.
+year = "YEAR"
+week = "WEEK"
+# Station columns are named exactly as in thermal_stations/hydro_stations GENERATOR.
+
+[columns.terminal_water_value]
+# 31 rows: stepwise terminal water value curve (aggregate system storage).
+# STORED_ENERGY in GWh; VALUE in NZD/MWh.
+stored_energy = "STORED_ENERGY"
+value         = "VALUE"
+
+[columns.lost_load]
+# 27 rows: value-of-lost-load by node, sector, and segment.
+# Nodes: NI, HAY, SI. Sectors: industrial, commercial, residential.
+# COST in NZD/MWh.
+node       = "NODE"
+island     = "ISLAND"
+sector     = "SECTOR"
+segment    = "SEGMENT"
+proportion = "PROPORTION"
+bound      = "BOUND"
+cost       = "COST"

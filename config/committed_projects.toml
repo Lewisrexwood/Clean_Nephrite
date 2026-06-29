@@ -1,0 +1,28 @@
+# Fleet changes inside the model horizon. Applied by the Plan 3 model layer
+# at each project's date. Seed list — extend as projects are confirmed.
+
+[[projects]]
+name = "Tauhei Solar"
+hub = "WKM"
+technology = "solar"
+capacity_mw = 202.0
+energy_mwh = 0.0
+commissioning = 2026-12-01
+source_note = "Harmony Energy / first power announced for late 2026; verify"
+
+[[projects]]
+name = "Kaiwaikawe Wind"
+hub = "OTA"
+technology = "wind"
+capacity_mw = 77.0
+energy_mwh = 0.0
+commissioning = 2026-09-01
+source_note = "Mercury, Northland; verify commissioning quarter"
+
+[[retirements]]
+name = "Huntly Rankine unit (assumption)"
+hub = "OTA"
+technology = "thermal"
+capacity_mw = 250.0
+date = 2028-06-30
+source_note = "ASSUMPTION ONLY — Genesis has signalled Rankines remain through the late 2020s; beyond the 2-year horizon today, included as schema exercise"

@@ -1,0 +1,63 @@
+# Plant classification. POCs under modelled_hydro are dispatched by the model
+# (water values), NOT taken from their offers. Built from the distinct-POC
+# offer query on snapshot 2026-06-11; refine as needed.
+#
+# Only POCs confirmed present in the 2026-06-11 offers (ProductType=Energy)
+# and identified as hydro via grid_demand PlantName / NetworkSupplyPoints
+# Description are listed. Geothermal, thermal, wind, and solar POCs are
+# intentionally excluded (stay offer-curved).
+#
+# Operators: MERI=Meridian, MRPL=Mercury, CTCT=Contact, GENE=Genesis, KING=King Country
+# WKM2201 hosts both Whakamaru (hydro, MRPL) and Mokai (geothermal, MRPL) —
+# included as hydro because Whakamaru water-value dispatch is modelled here.
+
+[modelled_hydro]
+pocs = [
+    # --- Meridian Energy — Waitaki chain ---
+    "WTK0111",  # Waitaki
+    "AVI2201",  # Aviemore
+    "BEN2202",  # Benmore
+    "OHA2201",  # Ohau A
+    "OHB2201",  # Ohau B
+    "OHC2201",  # Ohau C
+    # --- Meridian Energy — Manapouri ---
+    "MAN2201",  # Manapouri
+    # --- Contact Energy — Clutha chain ---
+    "CYD2201",  # Clyde
+    "ROX1101",  # Roxburgh (lower voltage POC)
+    "ROX2201",  # Roxburgh (upper voltage POC)
+    # --- Genesis Energy — Tekapo (South Island) ---
+    "TKA0111",  # Tekapo A  (appears under GENE in 2026-06-11 offers)
+    "TKB2201",  # Tekapo B  (appears under GENE in 2026-06-11 offers)
+    # --- Genesis Energy — Tongariro chain (North Island) ---
+    "RPO2201",  # Rangipo
+    "TKU2201",  # Tokaanu
+    # --- Genesis Energy — Waikaremoana chain (North Island) ---
+    "TUI1101",  # Tuai / Kaitawa / Piriripaua (all at this POC)
+    # --- Mercury NZ — Waikato chain ---
+    "ARA2201",  # Aratiatia
+    "OHK2201",  # Ohakuri
+    "ATI2201",  # Atiamuri
+    "WKM2201",  # Whakamaru (also Mokai geothermal at same POC — see note above)
+    "MTI2201",  # Maraetai
+    "WPA2201",  # Waipapa
+    "ARI1101",  # Arapuni (lower voltage POC)
+    "ARI1102",  # Arapuni (upper voltage POC)
+    "KPO1101",  # Karapiro
+    # --- King Country — Mangahao ---
+    "MHO0331",  # Mangahao
+]
+
+# Grid-scale batteries found in the 2026-06-11 offer dataset.
+# GLN0332 hosts "Glenbrook-Ohurua Battery" (per grid_demand PlantName).
+# Participant CTCT unit GLB0 at this POC is the BESS unit; exact power/energy
+# capacity not derivable from offer data alone — fill in from public sources
+# before Task 5 uses these values for dispatch constraints.
+[[batteries]]
+name = "Glenbrook-Ohurua Battery"
+poc = "GLN0332"
+participant = "CTCT"
+unit = "GLB0"
+power_mw = 0.0      # TODO: confirm from public sources (approx 100 MW)
+energy_mwh = 0.0    # TODO: confirm from public sources (approx 200 MWh)
+round_trip_efficiency = 0.85

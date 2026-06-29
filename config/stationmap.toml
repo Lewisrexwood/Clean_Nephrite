@@ -1,0 +1,192 @@
+# JADE station -> one of the 8 FTR hubs, and hydro offer-POC -> JADE reservoir.
+#
+# Every JADE thermal + hydro station MUST appear in station_to_hub (build_stationmap
+# loud-fails with a list of unmapped stations otherwise).  Only modelled-hydro
+# POCs with a genuine hydraulic connection to a JADE-tracked controlled reservoir
+# appear in poc_to_reservoir; run-of-river POCs with no controlled JADE reservoir
+# (e.g. Mangahao MHO0331) are intentionally NOT mapped — they do not anchor a
+# reservoir's water value.  reservoir_implied_wv already drops POCs absent from
+# the map.
+#
+# Populated from the real JADE dataset in data/static/jade/ (Plan 3c Task 3).
+# 36 stations total: 10 thermal + 26 hydro.
+#
+# 8 FTR hubs:
+#   NI: OTA (Otahuhu/Auckland), WKM (Whakamaru/Waikato-central),
+#       RDF (Redclyffe/Hawke's Bay), HAY (Haywards/Wellington-lower NI)
+#   SI: KIK (Kikiwa/Nelson-Marlborough-West Coast), ISL (Islington/Canterbury),
+#       BEN (Benmore/Waitaki-Otago), INV (Invercargill/Southland)
+
+[station_to_hub]
+# --- Thermal stations (all JADE node = NI) ---
+# Huntly is on the Waikato River at the Waikato central grid node.
+"Huntly_e3p"         = "WKM"   # Huntly gas (e3p), Waikato
+"Huntly_main_g1"     = "WKM"   # Huntly coal unit 1
+"Huntly_main_g2"     = "WKM"   # Huntly coal unit 2
+"Huntly_main_g4"     = "WKM"   # Huntly coal unit 4
+"Huntly_peaker"      = "WKM"   # Huntly gas peaker
+# Whirinaki diesel peaker is in Hawke's Bay (near Napier/Redclyffe hub)
+"NI_Whirinaki_220KV" = "RDF"   # Whirinaki diesel peaker, Hawke's Bay
+# Stratford and McKee are in Taranaki; TCC connects into WKM backbone
+"Stratford_220KV"    = "WKM"   # Stratford CCGT, Taranaki
+"Stratford_peakers"  = "WKM"   # Stratford gas peakers, Taranaki
+"McKee_peakers"      = "WKM"   # McKee gas peakers, Taranaki
+"Junction_Road"      = "WKM"   # Junction Road gas peaker, Taranaki
+
+# --- Hydro stations (NI) ---
+# Waikato chain: all stations from Aratiatia (below Taupo) to Karapiro drain
+# to the Waikato River and connect into the WKM grid node.
+"Aratiatia"          = "WKM"   # Waikato chain, below Lake Taupo
+"Ohakuri"            = "WKM"   # Waikato chain
+"Atiamuri"           = "WKM"   # Waikato chain
+"Whakamaru"          = "WKM"   # Waikato chain (WKM hub namesake)
+"Maraetai"           = "WKM"   # Waikato chain
+"Waipapa"            = "WKM"   # Waikato chain
+"Arapuni"            = "WKM"   # Waikato chain
+"Karapiro"           = "WKM"   # Waikato chain, lowest station
+# Tongariro Power Development: diversions ultimately flow to Lake Taupo / Waikato
+"Tokaanu"            = "WKM"   # Tongariro scheme, Lake Rotoaira → Taupo
+"Rangipo"            = "WKM"   # Tongariro scheme, Lake Moawhango diversion
+# Matahina is on the Rangitaiki River in Bay of Plenty; connects into WKM backbone
+"Matahina"           = "WKM"   # Rangitaiki River, Bay of Plenty
+# Mangahao is a small independent scheme in Manawatu, feeds into the HAY grid area
+"Mangahao"           = "HAY"   # Mangahao River, Manawatu-Palmerston North
+# Waikaremoana is in Hawke's Bay / Urewera, grid connection is near RDF
+"Waikaremoana"       = "RDF"   # Waikaremoana, Hawke's Bay
+
+# --- Hydro stations (SI) ---
+# Waitaki chain: Tekapo -> Pukaki -> Ohau -> Benmore -> Aviemore -> Waitaki
+"Tekapo_A"           = "BEN"   # Waitaki chain, Lake Tekapo
+"Tekapo_B"           = "BEN"   # Waitaki chain, Lake Tekapo canal
+"Ohau_A"             = "BEN"   # Waitaki chain, Ohau/Pukaki
+"Ohau_B"             = "BEN"   # Waitaki chain, Ohau
+"Ohau_C"             = "BEN"   # Waitaki chain, Ohau canal
+"Benmore"            = "BEN"   # Waitaki chain (BEN hub namesake)
+"Aviemore"           = "BEN"   # Waitaki chain
+"Waitaki"            = "BEN"   # Waitaki chain, terminal station
+# Clutha chain: Lake Hawea -> Lake Dunstan (Clyde) -> Lake Roxburgh (Roxburgh)
+"Clyde_220kV"        = "BEN"   # Clutha/Clyde, Otago
+"Roxburgh"           = "BEN"   # Clutha/Roxburgh, Otago
+# Cobb is in Nelson/Tasman, connects into KIK (Nelson-West Coast hub)
+"Cobb"               = "KIK"   # Cobb Valley, Nelson
+# Coleridge is in Canterbury foothills, connects into ISL (Islington/Canterbury)
+"Coleridge"          = "ISL"   # Lake Coleridge, Canterbury
+# Manapouri is in Southland (Fiordland), connects into INV (Invercargill/Southland)
+"Manapouri"          = "INV"   # Manapouri, Southland/Fiordland
+
+# --- Fixed / must-run stations (geothermal, wind, cogen, run-of-river, ---------
+#     regional aggregates).  These are dispatched at fixed output by JADE
+#     (mustrun_generation sums their capacity per hub).  Every fixed station
+#     must be mapped or build_stationmap loud-fails.  Hub assignment is by JADE
+#     node + known plant geography to the nearest FTR hub.
+# Geothermal — central NI Taupo Volcanic Zone fields connect into WKM backbone.
+"Wairakei_geothermal"          = "WKM"   # Wairakei field, Taupo
+"Ohaaki_geothermal"            = "WKM"   # Ohaaki field, near Taupo
+"Poihipi_geothermal"           = "WKM"   # Poihipi field, Wairakei
+"Rotokawa_geothermal"          = "WKM"   # Rotokawa field, Taupo
+"Tauhara_geothermal"           = "WKM"   # Tauhara field, Taupo
+"TeMihi_geothermal"            = "WKM"   # Te Mihi field, Wairakei
+"TeHuka_geothermal"            = "WKM"   # Te Huka, Taupo
+"TeHuka_3"                     = "WKM"   # Te Huka unit 3, Taupo
+"NgaAwaPurua_geothermal"       = "WKM"   # Nga Awa Purua, Rotokawa
+"Ngatamariki_geothermal"       = "WKM"   # Ngatamariki, Taupo
+"Mokai"                        = "WKM"   # Mokai geothermal, near Taupo (WKM2201 POC)
+"TeAhiOMaui_geothermal"        = "WKM"   # Te Ahi O Maui, Kawerau
+"Topp1andTasmanBP_geothermal"  = "WKM"   # Kawerau TOPP1/Tasman, Bay of Plenty
+"Kawerau_geothermal"           = "WKM"   # Kawerau field, Bay of Plenty
+"Ngawha_geothermal"            = "OTA"   # Ngawha, Northland → Auckland (OTA)
+# Hydro run-of-river / small must-run hydro.
+"Aniwhenua"                    = "WKM"   # Aniwhenua, Rangitaiki River, BoP
+"WheaoAndFlaxy_runofriver"     = "WKM"   # Wheao/Flaxy, Bay of Plenty (NI node)
+"HighBank_runofriver"          = "ISL"   # Highbank, Rakaia/Canterbury
+"Teviot_runofriver"            = "BEN"   # Teviot, Otago (Clutha area)
+"Waipori_hydro_2A"             = "BEN"   # Waipori, Otago
+"Mahinerangi_windfarm_and_Waipori_hydro" = "BEN"   # Mahinerangi/Waipori, Otago
+# Cogeneration.
+"Glenbrook_cogen"              = "OTA"   # Glenbrook steel cogen, south Auckland
+"Te_Rapa_cogen"                = "WKM"   # Te Rapa cogen, Hamilton
+"Kinleith_cogen"               = "WKM"   # Kinleith cogen, Tokoroa
+"Kapuni_cogen"                 = "WKM"   # Kapuni cogen, Taranaki → WKM backbone
+"Whareroa_cogen"               = "WKM"   # Whareroa/Fonterra cogen, Taranaki
+# Wind farms.
+"Harapaki_windfarm"            = "RDF"   # Harapaki, Hawke's Bay
+"TeUku_windfarm"               = "WKM"   # Te Uku, Waikato
+"Waipipi_windfarm"             = "WKM"   # Waipipi, south Taranaki → WKM backbone
+"Turitea_windfarm"             = "HAY"   # Turitea, Manawatu (Tararua Range)
+"TeApiti_windfarm"             = "HAY"   # Te Apiti, Manawatu
+"Tararua_TeRereHau_windfarm"   = "HAY"   # Tararua/Te Rere Hau, Manawatu
+"MillCreek_windfarm"           = "HAY"   # Mill Creek, Wellington (HAY node)
+"WestWind_windfarm"            = "HAY"   # West Wind, Wellington (HAY node)
+"Kaiwera_Downs_windfarm"       = "INV"   # Kaiwera Downs, Southland
+"WhiteHill_windfarm"           = "INV"   # White Hill, Southland
+# Regional aggregates (small distributed embedded generation buckets).
+"NI_aggregate"                 = "WKM"   # NI distributed aggregate (NI node)
+"SI_aggregate"                 = "ISL"   # SI distributed aggregate (SI node)
+"HAY_aggregate"                = "HAY"   # lower-NI/HAY distributed aggregate
+
+# ---------------------------------------------------------------------------
+# Hydro offer-POC -> JADE reservoir
+#
+# Maps each modelled-hydro POC to the JADE reservoir whose water value the
+# offer price implies. JADE has 7 reservoirs: Lake_Hawea, Lake_Ohau,
+# Lake_Pukaki, Lake_Taupo, Lake_Tekapo, Lake_Waikaremoana,
+# Lakes_Manapouri_Te_Anau.
+#
+# Judgment calls noted inline.
+# ---------------------------------------------------------------------------
+
+[poc_to_reservoir]
+# --- Meridian Energy — Waitaki chain ---
+# Waitaki, Aviemore, and Benmore draw from water ultimately stored in Lake_Pukaki
+# (the dominant upper SI reservoir feeding Benmore via the canal junction).
+"WTK0111" = "Lake_Pukaki"   # Waitaki dam, terminal station; upstream storage is Pukaki
+"AVI2201" = "Lake_Pukaki"   # Aviemore; upstream Benmore/Pukaki chain
+"BEN2202" = "Lake_Pukaki"   # Benmore; head=Lake_Benmore fed by Lake_Pukaki and Lake_Ohau (Pukaki dominant)
+# Ohau A/B/C draw from the Pukaki-Ohau canal junction which is fed by both
+# Lake_Pukaki (560 cumec) and Lake_Ohau (200 cumec); mapped to Lake_Ohau because
+# the Ohau-dedicated arc (Ohau→Ruataniwha) is the primary feed for Ohau A/B/C.
+"OHA2201" = "Lake_Ohau"     # Ohau A, Pukaki-Ohau canal (Ohau-chain primary)
+"OHB2201" = "Lake_Ohau"     # Ohau B, Lake Ruataniwha (downstream of Ohau A)
+"OHC2201" = "Lake_Ohau"     # Ohau C, Ohau_BC_canal
+
+# --- Meridian Energy — Manapouri ---
+"MAN2201" = "Lakes_Manapouri_Te_Anau"   # Manapouri, Lake Manapouri/Te Anau
+
+# --- Contact Energy — Clutha chain ---
+# Lake_Dunstan (Clyde) and Lake_Roxburgh are NOT JADE reservoirs; the upstream
+# controlling storage in the JADE network is Lake_Hawea (feeds Dunstan via arc).
+"CYD2201" = "Lake_Hawea"    # Clyde dam; Lake_Dunstan is not a JADE reservoir; upstream is Lake_Hawea
+"ROX1101" = "Lake_Hawea"    # Roxburgh lower POC; below Clyde; upstream storage Lake_Hawea
+"ROX2201" = "Lake_Hawea"    # Roxburgh upper POC; same chain
+
+# --- Genesis Energy — Tekapo (South Island) ---
+"TKA0111" = "Lake_Tekapo"   # Tekapo A, draws directly from Lake_Tekapo
+"TKB2201" = "Lake_Tekapo"   # Tekapo B, Tekapo canal (from Lake_Tekapo via Lake_Scott)
+
+# --- Genesis Energy — Tongariro chain (North Island) ---
+# Rangipo draws from Lake_Moawhango (Tongariro diversion scheme); Tokaanu from
+# Lake_Rotoaira. Both ultimately divert water into/from the Lake_Taupo catchment.
+"RPO2201" = "Lake_Taupo"    # Rangipo; Lake_Moawhango → Lake_Taupo diversion (judgment: nearest JADE NI reservoir)
+"TKU2201" = "Lake_Taupo"    # Tokaanu; Lake_Rotoaira drains to Lake_Taupo
+
+# --- Genesis Energy — Waikaremoana chain (North Island) ---
+"TUI1101" = "Lake_Waikaremoana"   # Tuai/Kaitawa/Piriripaua; draws from Lake_Waikaremoana
+
+# --- Mercury NZ — Waikato chain ---
+# All Waikato chain stations are fed ultimately from Lake_Taupo via the
+# Lake_Taupo → Lake_Aratiatia arc in the JADE network.
+"ARA2201" = "Lake_Taupo"    # Aratiatia; first station below Lake_Taupo
+"OHK2201" = "Lake_Taupo"    # Ohakuri; Waikato chain
+"ATI2201" = "Lake_Taupo"    # Atiamuri; Waikato chain
+"WKM2201" = "Lake_Taupo"    # Whakamaru; Waikato chain
+"MTI2201" = "Lake_Taupo"    # Maraetai; Waikato chain
+"WPA2201" = "Lake_Taupo"    # Waipapa; Waikato chain
+"ARI1101" = "Lake_Taupo"    # Arapuni lower POC; Waikato chain
+"ARI1102" = "Lake_Taupo"    # Arapuni upper POC; Waikato chain
+"KPO1101" = "Lake_Taupo"    # Karapiro; Waikato terminal station
+
+# --- King Country — Mangahao ---
+# MHO0331 (Mangahao) is intentionally excluded: it is a run-of-river scheme
+# with no hydraulic connection to any JADE-tracked reservoir.  It remains in
+# config/plant.toml [modelled_hydro] (correctly excluded from offer supply
+# curves) but must not pollute any reservoir's offer-implied water value.

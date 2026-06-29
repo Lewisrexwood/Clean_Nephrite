@@ -1,0 +1,19 @@
+# Demand model config.
+
+[forward]
+# Annual demand growth applied to the historical shape (what-if flag).
+annual_growth = 0.01
+# Minimum days of demand history required to build a forward profile.
+min_history_days = 90
+
+[tiwai]
+# Tiwai Point smelter: ~570-600 MW flat at one POC (~12-13% of NZ demand).
+# Carved out of INV hub demand as an explicit named block; Phase 1 treats it
+# as constant; later phases make DR tranches price-responsive and "exit" a
+# one-flag what-if (see Phase 1 spec).
+pocs = ["TWI2201"]
+baseline_mw = 570.0
+
+[[tiwai.dr_tranches]]
+mw = 185.0
+trigger_note = "contracted dry-year demand response (2024 Meridian agreements)"

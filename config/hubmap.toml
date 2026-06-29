@@ -1,0 +1,93 @@
+# POC -> hub assignment. Every POC resolves via, in order:
+# 1. poc_overrides (exact POC code), else
+# 2. region_to_hub (its "Network reporting region"), else
+# 3. error — unmapped POCs must be assigned deliberately, never defaulted.
+# Hub boundaries follow historically binding corridors (see Phase 1 spec).
+# Region->hub assignments are a first pass; refine against binding-constraint
+# analysis and reconstructed hub prices in later phases.
+
+[columns]
+poc = "POC code"
+region = "Network reporting region"
+
+[region_to_hub]
+# One entry per distinct "Network reporting region" value enumerated from real snapshot.
+# North Island hubs: OTA, WKM, RDF, HAY. South Island hubs: KIK, ISL, BEN, INV.
+
+# --- Upper North Island (UNI) → OTA ---
+"Auckland (Vector)" = "OTA"
+"Waitemata (Vector)" = "OTA"
+"Counties (Counties Power)" = "OTA"
+"Whangārei and Kaipara (Northpower)" = "OTA"
+"Bay of Islands (Top Energy)" = "OTA"
+
+# --- Central North Island (CNI) → WKM ---
+"Waikato (WEL Networks)" = "WKM"
+"Waipa (Waipa Networks)" = "WKM"
+"Thames Valley (Powerco)" = "WKM"
+"Tauranga (Powerco)" = "WKM"
+"Rotorua (Unison Networks)" = "WKM"
+"Eastern Bay of Plenty (Horizon Energy)" = "WKM"
+"King Country (The Lines Company)" = "WKM"
+"Taupō (Unison Networks)" = "WKM"
+
+# --- Hawke's Bay / Gisborne → RDF (Redclyffe) ---
+"Hawke's Bay (Unison Networks)" = "RDF"
+"Central Hawke's Bay (Centralines)" = "RDF"
+"Southern Hawke's Bay (Scanpower)" = "RDF"
+"Tairāwhiti and Wairoa (Firstlight Network)" = "RDF"
+
+# --- Lower North Island (LNI) → HAY ---
+"Taranaki (Powerco)" = "HAY"
+"Whanganui (Powerco)" = "HAY"
+"Manawatū (Powerco)" = "HAY"
+"Kāpiti and Horowhenua (Electra)" = "HAY"
+"Wairarapa (Powerco)" = "HAY"
+"Wellington (Wellington Electricity)" = "HAY"
+
+# --- Upper South Island (USI): Nelson/Marlborough/West Coast → KIK; Canterbury → ISL ---
+"Nelson (Nelson Electricity)" = "KIK"
+"Tasman (Network Tasman)" = "KIK"
+"Marlborough (Marlborough Lines)" = "KIK"
+"Buller (Buller Electricity)" = "KIK"
+"West Coast (Westpower)" = "KIK"
+"North Canterbury (MainPower NZ)" = "ISL"
+"Central Canterbury (Orion New Zealand)" = "ISL"
+"Ashburton (Electricity Ashburton)" = "ISL"
+"South Canterbury (Alpine Energy)" = "ISL"
+
+# --- Lower South Island (LSI): Otago/Waitaki → BEN; Southland → INV ---
+"Waitaki (Network Waitaki)" = "BEN"
+"Otago (OtagoNet)" = "BEN"
+"Central Otago (Aurora Energy)" = "BEN"
+"Dunedin (Aurora Energy)" = "BEN"
+"Queenstown (Aurora Energy)" = "BEN"
+"Frankton (Lakelands)" = "BEN"
+"Southland (The Power Company)" = "INV"
+"Invercargill (Electricity Invercargill)" = "INV"
+
+[poc_overrides]
+# Two categories of exact-POC exception:
+#  (a) null-region-only POCs (no usable "Network reporting region") — REQUIRED here.
+#  (b) multi-hub-conflict POCs whose regions span >1 hub — REQUIRED to pick deliberately.
+# TWI2201 is neither: it auto-resolves to INV via its Southland region; the
+# override is redundant-but-explicit, kept for auditability. Remove freely.
+"TWI2201" = "INV"
+# KAW2201 = Kawerau (Eastern Bay of Plenty, CNI zone) → WKM
+"KAW2201" = "WKM"
+# OHG1101 = Ohakune area (King Country zone, CNI) → WKM
+"OHG1101" = "WKM"
+
+# --- Multi-hub conflict resolutions (POCs that span two network regions) ---
+# OKN0111 = Ohakune — appears under both King Country (TLC, →WKM) and
+# Whanganui (Powerco, →HAY). Ohakune is on The Lines Company network; WKM.
+"OKN0111" = "WKM"
+# MTG0111 = Mangatangi — NP interconnect between Counties Power (→OTA) and
+# WEL Networks/Waikato (→WKM). Mangatangi substation is in Counties Power's
+# territory (southern Auckland zone); OTA.
+"MTG0111" = "OTA"
+# TWZ0331 = Twizel — appears under South Canterbury/Alpine Energy (→ISL) and
+# Waitaki/Network Waitaki (→BEN). Alpine Energy is the primary distributor
+# serving Twizel; ISL. (Judgment call: geographically in Waitaki basin but
+# administratively South Canterbury.)
+"TWZ0331" = "ISL"

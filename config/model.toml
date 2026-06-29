@@ -1,0 +1,17 @@
+# Model configuration. Plan 3a uses [wvanchor]; Plan 3b adds master/dispatch.
+
+[wvanchor]
+# Anchor the master's near-term hydro water value to the offer-implied value.
+# weight scales the anchor term (0 = pure fundamental run). decay_weeks: anchor
+# fades linearly from full at week 1 to zero at this week.
+weight = 1.0
+decay_weeks = 13
+
+[fcf_extract]
+# FCF extraction: per-reservoir water-value curves for a stack model.
+# reslice_weeks: weeks at which to re-evaluate curves at current storage
+#   (default short-term focus; extensible to monthly out to 104).
+reslice_weeks  = [1, 2, 3, 4]
+grid_points    = 9      # storage grid points per reservoir for the slice
+decay_weeks    = 13     # offer-trust decay (reuses the wvanchor convention)
+forward_weight = 0.0    # OFF until forward-curve anchoring is designed

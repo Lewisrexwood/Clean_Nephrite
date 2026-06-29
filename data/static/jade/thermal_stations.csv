@@ -1,0 +1,14 @@
+% Thermal station data. Source From Roger.
+% Heat rate in GJ/MWh.
+% Capacity in MW.
+GENERATOR,NODE,FUEL,HEAT_RATE,CAPACITY,OMCOST,START_YEAR,START_WEEK,END_YEAR,END_WEEK
+Huntly_e3p,NI,gas,7.4,385,5.2,0,0,0,0
+Huntly_main_g1,NI,coal,10.9,240,9.6,0,0,0,0
+Huntly_main_g2,NI,coal,10.9,240,9.6,0,0,0,0
+Huntly_main_g4,NI,coal,10.9,240,9.6,0,0,0,0
+Huntly_peaker,NI,gas,10.5,48,9.7,0,0,0,0
+NI_Whirinaki_220KV,NI,diesel,10.9,155,11.6,0,0,0,0
+Stratford_220KV,NI,gas,7.4,377,5.2,0,0,2024,52
+Stratford_peakers,NI,gas,10.2,200,9.4,0,0,0,0
+McKee_peakers,NI,gas,10.5,100,9.4,0,0,0,0
+Junction_Road,NI,gas,10.5,100,9.4,2020,9,2050,52

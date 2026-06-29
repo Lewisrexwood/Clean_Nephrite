@@ -1,0 +1,108 @@
+# Nephrite 8-hub topology — the NZ FTR market hubs.
+# Corridor capacities/losses are INDICATIVE; refined in Plan 2 against
+# Transpower data and EMI binding-constraint analysis. Boundaries follow
+# historically binding corridors per the Phase 1 spec.
+
+[[hubs]]
+code = "OTA"
+node = "OTA2201"
+name = "Otahuhu"
+island = "NI"
+
+[[hubs]]
+code = "WKM"
+node = "WKM2201"
+name = "Whakamaru"
+island = "NI"
+
+[[hubs]]
+code = "RDF"
+node = "RDF2201"
+name = "Redclyffe"
+island = "NI"
+
+[[hubs]]
+code = "HAY"
+node = "HAY2201"
+name = "Haywards"
+island = "NI"
+
+[[hubs]]
+code = "KIK"
+node = "KIK2201"
+name = "Kikiwa"
+island = "SI"
+
+[[hubs]]
+code = "ISL"
+node = "ISL2201"
+name = "Islington"
+island = "SI"
+
+[[hubs]]
+code = "BEN"
+node = "BEN2201"
+name = "Benmore"
+island = "SI"
+
+[[hubs]]
+code = "INV"
+node = "INV2201"
+name = "Invercargill"
+island = "SI"
+
+[[corridors]]
+from = "OTA"
+to = "WKM"
+capacity_fwd_mw = 2300.0
+capacity_rev_mw = 2300.0
+loss_factor = 0.03
+kind = "AC"
+
+[[corridors]]
+from = "WKM"
+to = "RDF"
+capacity_fwd_mw = 700.0
+capacity_rev_mw = 700.0
+loss_factor = 0.03
+kind = "AC"
+
+[[corridors]]
+from = "WKM"
+to = "HAY"
+capacity_fwd_mw = 1600.0
+capacity_rev_mw = 1600.0
+loss_factor = 0.04
+kind = "AC"
+
+[[corridors]]
+from = "HAY"
+to = "BEN"
+capacity_fwd_mw = 1200.0   # southward
+capacity_rev_mw = 1400.0   # northward (HVDC bipole)
+loss_factor = 0.065
+kind = "HVDC"
+
+[[corridors]]
+from = "BEN"
+to = "ISL"
+capacity_fwd_mw = 1400.0
+capacity_rev_mw = 1400.0
+loss_factor = 0.025
+kind = "AC"
+
+[[corridors]]
+from = "ISL"
+to = "KIK"
+capacity_fwd_mw = 500.0
+capacity_rev_mw = 500.0
+loss_factor = 0.035
+kind = "AC"
+
+[[corridors]]
+from = "BEN"
+to = "INV"
+capacity_fwd_mw = 800.0
+capacity_rev_mw = 800.0
+loss_factor = 0.03
+kind = "AC"

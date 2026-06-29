@@ -1,0 +1,88 @@
+# Reservoir definitions for the 6 major controlled-storage lakes.
+#
+# STORAGE STATE IS A MANUAL INPUT: no free daily per-lake or NZ/SI aggregate
+# storage feed is automatable (NZX/NIWA subscription-only). The operator
+# supplies NZ and SI aggregate storage (GWh) to storage_state(), which
+# disaggregates to per-reservoir GWh using monthly_share. NI = NZ - SI.
+#
+# monthly_share: fraction of the ISLAND aggregate attributed to each lake by
+# calendar month.
+# Shares computed from HMD mean monthly Active storage (Mm³) — volume proxy
+# for energy share, see scripts/compute_storage_shares.jl.
+# Source: EMI HydrologicalModellingDataset 3_StorageAndSpill_20241231/3_1_Storage/
+# (files downloaded to data/static/hmd/)
+
+[inflows]
+# JADE weekly inflows (cumecs), wide format.
+#
+# File structure (jade_inflows_2025w52.csv):
+#   Line 1: % Historical weekly inflow sequences [cumecs].   <- % comment
+#   Line 2: (blank)
+#   Line 3: CATCHMENT,,Lake_Arapuni,...                      <- lake names (becomes header)
+#   Line 4: INFLOW_REGION,,NI,NI,...                         <- filtered out by parser
+#   Line 5: YEAR,WEEK                                        <- filtered out by parser
+#   Lines 6+: 1932,1,<float values>,...                      <- data rows
+#
+# DuckDB parsing: comment='%' (strips line 1), skip=1 (blank line 2), header=true
+# (CATCHMENT row becomes the header, giving lake column names). The first column
+# is named "CATCHMENT" (holds the year) and the second "column01" (holds the week).
+# Rows with non-integer CATCHMENT (INFLOW_REGION, YEAR) are filtered in SQL.
+file = "data/static/jade_inflows_2025w52.csv"
+skip_rows = 1            # blank lines after the % comment line
+comment_char = "%"       # strips the leading % comment line
+year_column = "CATCHMENT"   # DuckDB renames: CATCHMENT -> year values
+week_column = "column01"    # DuckDB renames: blank col -> week values
+
+[inflows.reservoir_columns]
+# reservoir name -> exact JADE inflow column name (from CATCHMENT header row).
+# TeAnau and Manapouri both map to the combined Lakes_Manapouri_Te_Anau
+# catchment (JADE does not split them). Monthly shares disaggregate between
+# the two reservoirs within that combined inflow total.
+# Lake_Ohau and Lake_Waikaremoana are JADE network reservoirs (in reservoirs.csv)
+# with their own inflow columns; they are mapped here so _week_inflows returns
+# real inflow rather than zero. They do NOT have [[reservoirs]] entries (no free
+# daily storage feed) so they do not participate in storage_state disaggregation.
+Taupo            = "Lake_Taupo"
+Tekapo           = "Lake_Tekapo"
+Pukaki           = "Lake_Pukaki"
+Hawea            = "Lake_Hawea"
+TeAnau           = "Lakes_Manapouri_Te_Anau"
+Manapouri        = "Lakes_Manapouri_Te_Anau"
+Lake_Ohau        = "Lake_Ohau"
+Lake_Waikaremoana = "Lake_Waikaremoana"
+
+[[reservoirs]]
+name = "Taupo"
+island = "NI"
+hub = "WKM"
+monthly_share = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+
+[[reservoirs]]
+name = "Tekapo"
+island = "SI"
+hub = "BEN"
+monthly_share = [0.104, 0.104, 0.105, 0.144, 0.144, 0.142, 0.139, 0.128, 0.121, 0.071, 0.087, 0.099]
+
+[[reservoirs]]
+name = "Pukaki"
+island = "SI"
+hub = "BEN"
+monthly_share = [0.448, 0.477, 0.485, 0.458, 0.444, 0.435, 0.45, 0.447, 0.413, 0.39, 0.394, 0.423]
+
+[[reservoirs]]
+name = "Hawea"
+island = "SI"
+hub = "BEN"
+monthly_share = [0.246, 0.245, 0.249, 0.234, 0.228, 0.221, 0.208, 0.189, 0.187, 0.22, 0.24, 0.248]
+
+[[reservoirs]]
+name = "TeAnau"
+island = "SI"
+hub = "INV"
+monthly_share = [0.133, 0.113, 0.104, 0.106, 0.12, 0.132, 0.129, 0.154, 0.183, 0.211, 0.183, 0.152]
+
+[[reservoirs]]
+name = "Manapouri"
+island = "SI"
+hub = "INV"
+monthly_share = [0.07, 0.061, 0.058, 0.058, 0.065, 0.07, 0.074, 0.082, 0.096, 0.107, 0.097, 0.079]

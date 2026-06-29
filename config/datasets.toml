@@ -1,0 +1,87 @@
+# EMI dataset registry. {yyyy} and {yyyymmdd} are substituted at download time.
+# All URL patterns verified 2026-06-11 against the live EMI site.
+
+[[datasets]]
+name = "offers"
+# Verified 2026-06-11. Year subfolder present; {yyyy} is used.
+# NOTE: this file contains BOTH energy offers AND reserve offers.
+# ProductType column distinguishes them: "Energy" for energy offers;
+# "Reserve" for reserve offers with ReserveType values "FIR" and "SIR".
+url_template = "https://www.emi.ea.govt.nz/Wholesale/Datasets/BidsAndOffers/Offers/{yyyy}/{yyyymmdd}_Offers.csv"
+required = true
+
+[[datasets]]
+name = "final_energy_prices"
+# Verified 2026-06-11. Files sit FLAT in the folder (no year subfolder).
+# Completed-day files have no _I suffix; same-day interim files carry _I.
+url_template = "https://www.emi.ea.govt.nz/Wholesale/Datasets/DispatchAndPricing/FinalEnergyPrices/{yyyymmdd}_FinalEnergyPrices.csv"
+# Historical (backtest) monthly file on the canonical Azure Blob store; the
+# historical ingest fetches this and slices to the snapshot day.
+bymonth_url_template = "https://emidatasets.blob.core.windows.net/publicdata/Datasets/Wholesale/DispatchAndPricing/FinalEnergyPrices/ByMonth/{yyyymm}_FinalEnergyPrices.csv"
+required = true
+
+[[datasets]]
+name = "final_reserve_prices"
+# Verified 2026-06-11. Same flat structure as FinalEnergyPrices.
+url_template = "https://www.emi.ea.govt.nz/Wholesale/Datasets/DispatchAndPricing/FinalReservePrices/{yyyymmdd}_FinalReservePrices.csv"
+required = true
+
+[[datasets]]
+name = "grid_demand"
+# Verified 2026-06-11. Daily file (one per trading day) in year subfolders.
+# Contains 5-minute RTD interval data by POC (point of connection) with
+# LoadMegawatts and GenerationMegawatts columns — LoadMegawatts is grid
+# demand (offtake) at each node. Also contains DollarsPerMegawattHour
+# (nodal price) and LocationFactor per interval. ~11 MB per day.
+# Source: DispatchAndPricing / NodalPricesAndVolumes on emi.ea.govt.nz.
+# Plan 2 aggregation: sum LoadMegawatts by POC -> GXP (via mapping config),
+# resample 5-min intervals -> 30-min by sum, then aggregate GXP -> hub via
+# the GXP->hub mapping table in config/. DollarsPerMegawattHour can serve
+# as a nodal price cross-check against final_energy_prices.
+url_template = "https://www.emi.ea.govt.nz/Wholesale/Datasets/DispatchAndPricing/NodalPricesAndVolumes/{yyyy}/{yyyymmdd}_DispatchNodalPricesAndVolumes.csv"
+required = true
+
+[[datasets]]
+name = "network_supply_points"
+# Verified 2026-06-13. Daily network supply point table: POC codes with
+# regional mappings (zone, island, network region, coordinates, participant).
+# Flat folder, daily files, ~420 KB. Used to build the POC->hub map.
+# Key columns: POC code, Zone, Island, Network reporting region.
+url_template = "https://www.emi.ea.govt.nz/Wholesale/Datasets/MappingsAndGeospatial/NetworkSupplyPointsTable/{yyyymmdd}_NetworkSupplyPointsTable.csv"
+required = true
+
+[[datasets]]
+name = "hydro_storage_daily"
+# No free automatable daily aggregate controlled-storage feed exists.
+# The EMI "Historical Electricity Risk Curves" report (RM3RAS) explicitly
+# states that hydro data (storage and/or inflows) is sourced from NZX hydro
+# (data provided by NIWA) and is not available for download. Attempting a
+# plain-GET export of RM3RAS yields only risk-curve thresholds (Watch/Alert/
+# Emergency GWh), not actual controlled storage values. The only EMI storage
+# data is the annual per-lake HMD series (required=false, hydro_storage below).
+# NZX/NIWA daily storage is subscription-only.
+# The Plan 3 runner must take the initial aggregate storage state as a manual
+# config/CLI input. Task 8's storage_state will document this seam.
+url_template = ""
+required = false
+
+[[datasets]]
+name = "hydro_storage"
+# Verified 2026-06-11. Historical daily storage series for Lake Pukaki
+# (South Island, Waitaki catchment — the largest regulated NZ reservoir).
+# This is a FULL-HISTORY file (not daily-dated); the URL has no {yyyymmdd}.
+# The snapshot captures it as-of download time for point-in-time discipline.
+# Nine other lake files follow the same pattern in the same folder
+# (see HydrologicalModellingDataset/3_StorageAndSpill_20241231/3_1_Storage/).
+# Current dataset covers data through approximately end-2024; a new release
+# is published roughly annually. Columns: Date, Time, Lake level (m),
+# Active storage (Mm3), Active contingent storage (Mm3), QualityCode.
+# Source: Environment / HydrologicalModellingDataset on emi.ea.govt.nz.
+# INTERIM placeholder — this dataset covers data through ~end-2024 and is
+# updated annually; it CANNOT supply today's reservoir state for a 2025/2026
+# model run. Remains available for share computation (Task 9 script) but
+# no longer blocks daily ingest. JADE weekly inflows live in data/static/
+# (Task 8 load_inflows); the daily aggregate storage initial-condition is a
+# manual config/CLI input per Task 8 — no free automatable feed exists.
+url_template = "https://www.emi.ea.govt.nz/Environment/Datasets/HydrologicalModellingDataset/3_StorageAndSpill_20241231/3_1_Storage/SI_PKI_Storage_LakePukaki.csv"
+required = false

@@ -1,0 +1,5 @@
+ORIG,DEST,MIN_FLOW,MAX_FLOW
+Lake_ToyTaupo,Lake_ToyWhaka,10.0,na
+Lake_ToyWhaka,ToyWhaka_tail,5.0,200.0
+Lake_ToyPukaki,Lake_ToyBenmore,na,3820.0
+Lake_ToyBenmore,ToyBenmore_tail,50.0,na
