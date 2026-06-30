@@ -63,6 +63,7 @@ function run_model(snapshot_date::Date; root::AbstractString,
                    overrides::Dict = Dict(),
                    engine::Symbol = :deterministic,
                    n_scenarios::Int = 100, iteration_limit::Int = 200,
+                   warm_start::Symbol = :anchor,
                    extract_fcf::Bool = false,
                    min_history_days::Int =
                        TOML.parsefile(joinpath(config_dir, "demand.toml"))["forward"]["min_history_days"],
@@ -101,7 +102,8 @@ function run_model(snapshot_date::Date; root::AbstractString,
             scen = empirical_inflow_scenarios(joinpath(config_dir, "reservoirs.toml"),
                                               mi.net, snapshot_date, n_weeks)
             sr = solve_sddp(mi, scen; n_scenarios = n_scenarios,
-                            iteration_limit = iteration_limit, seed = seed)
+                            iteration_limit = iteration_limit, seed = seed,
+                            warm_start = warm_start)
 
             # Point `prices` = per-(hub,week,step) mean across scenarios.
             prices = Dict{Tuple{String,Int,Int},Float64}()

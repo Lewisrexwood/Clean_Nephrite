@@ -40,6 +40,6 @@ function wvanchor(ds::DataStore, plant::Plant, sm::StationMap, config_path::Abst
     weight = Float64(cfg["weight"])
     decay = Int(cfg["decay_weeks"])
     rv = reservoir_implied_wv(ds, plant, sm)
-    values = Dict(r.reservoir => r.implied_wv for r in eachrow(rv))
+    values = Dict{String,Float64}(r.reservoir => r.implied_wv for r in eachrow(rv))
     return (values = values, weights = anchor_weights(decay, n_weeks), weight = weight)
 end

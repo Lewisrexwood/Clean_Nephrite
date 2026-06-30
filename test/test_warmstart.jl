@@ -1,4 +1,4 @@
-using Test, Nephrite, DataFrames
+using Test, Nephrite, DataFrames, Dates
 import SDDP
 
 @testset "warmstart" begin
@@ -127,6 +127,21 @@ import SDDP
             fcf = Nephrite.extract_run_fcf(sr.policy, mi.net, mi.initial_vol,
                                            sr.trajectories, Dict{String,Float64}(), cfg)
             @test all(isfinite, fcf[1].curves["L"].water_value)
+        end
+    end
+
+    @testset "run_model engine=:sddp warm_start=:cuts produces FCF curves" begin
+        mktempdir() do root
+            d = Date(2026, 6, 10)
+            build_test_snapshot!(root, d)
+            hist = joinpath(root, "history", "demand"); write_inputs_test_history(hist)
+            rr = Nephrite.run_model(d; root = root,
+                config_dir = joinpath(@__DIR__, "..", "config"),
+                history_dir = hist, nz_gwh = 4000.0, si_gwh = 2500.0,
+                n_weeks = 2, seed = 1, min_history_days = 10,
+                engine = :sddp, n_scenarios = 4, iteration_limit = 15,
+                extract_fcf = true, warm_start = :cuts)
+            @test isfile(joinpath(rr.run_dir, "fcf_curves.csv"))
         end
     end
 end
