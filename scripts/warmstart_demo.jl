@@ -99,12 +99,12 @@ try
     out = joinpath("runs", "warmstart_demo_$(SNAPSHOT)")
     mkpath(out)
     Nephrite._write_csv(wv_rows, joinpath(out, "warmstart_compare_wv.csv"))
-    Nephrite._write_csv(vcat(pol_rows,
-        rename(prc_rows, :hub => :reservoir, :mean_price => :mean_storage_mm3);
-        cols = :union), joinpath(out, "warmstart_compare_policy.csv"))
+    Nephrite._write_csv(pol_rows, joinpath(out, "warmstart_compare_storage.csv"))
+    Nephrite._write_csv(prc_rows, joinpath(out, "warmstart_compare_price.csv"))
     println("\nComparison CSVs written to: $out")
-    println("  warmstart_compare_wv.csv      — per-mode, per-reservoir water-value curves")
-    println("  warmstart_compare_policy.csv  — per-mode mean storage trajectory + weekly price")
+    println("  warmstart_compare_wv.csv       — per-mode, per-reservoir water-value curves")
+    println("  warmstart_compare_storage.csv  — per-mode mean storage trajectory (mode, reservoir, week, Mm3)")
+    println("  warmstart_compare_price.csv    — per-mode mean weekly price (mode, hub, week, \$/MWh)")
     println("See docs/WARMSTART.md for how to read these.")
 finally
     close(ds)

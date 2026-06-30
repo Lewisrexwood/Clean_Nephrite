@@ -34,12 +34,10 @@ an opportunity cost in the stage objective, decayed over `decay_weeks`. On by de
 ## Comparing them
 `julia --project=. scripts/warmstart_demo.jl` runs `:none`/`:anchor`/`:cuts` on the
 quick example and writes, under `runs/warmstart_demo_<date>/`:
-- `warmstart_compare_wv.csv` — per-mode, per-reservoir water-value curves
-  (`mode, reservoir, storage_gwh, water_value, week`).
-- `warmstart_compare_policy.csv` — per-mode mean storage trajectory and mean weekly
-  price (`mode, reservoir, week, mean_storage_mm3`; price rows carry the hub in
-  `reservoir` and the price in `mean_storage_mm3`, disambiguated by `mode`/`week`).
+- `warmstart_compare_wv.csv` — per-mode, per-reservoir water-value curves (`mode, reservoir, storage_gwh, water_value, week`).
+- `warmstart_compare_storage.csv` — per-mode mean end-of-week storage trajectory (`mode, reservoir, week, mean_storage_mm3`).
+- `warmstart_compare_price.csv` — per-mode mean weekly nodal price (`mode, hub, week, mean_price`, $/MWh).
 
 Read the WV file to see how each mechanism reshapes the water-value curve; read the
-policy file to see whether it changes operating decisions (conserve vs. release) and
+storage and price files to see whether it changes operating decisions (conserve vs. release) and
 the resulting prices.
