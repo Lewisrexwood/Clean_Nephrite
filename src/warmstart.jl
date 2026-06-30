@@ -51,3 +51,21 @@ function wv_warmstart_cuts(net::HydroNetwork, anchor_vol::Dict{String,Float64},
     end
     return cuts
 end
+
+"""
+    apply_wv_warmstart!(graph, cuts) -> graph
+
+Inject `cuts` (from `wv_warmstart_cuts`) into `graph` by writing them to a temp file
+in SDDP.jl's cut schema and loading via the public `SDDP.read_cuts_from_file`. Each
+cut becomes `V(s) ≥ intercept + Σ coefficients·(s − state)` on its node's cost-to-go.
+No-op when `cuts` is empty. Returns `graph`.
+"""
+function apply_wv_warmstart!(graph::SDDP.PolicyGraph, cuts::Vector{Dict{String,Any}})
+    isempty(cuts) && return graph
+    mktempdir() do dir
+        path = joinpath(dir, "warmstart_cuts.json")
+        open(io -> JSON3.write(io, cuts), path, "w")
+        SDDP.read_cuts_from_file(graph, path)
+    end
+    return graph
+end

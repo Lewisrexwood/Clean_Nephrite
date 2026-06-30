@@ -48,4 +48,53 @@ import SDDP
         @test isempty(Nephrite.wv_warmstart_cuts(net, Dict("Z" => 300.0),
                           Dict("Z" => 40.0), [1.0], -10.0))               # only coeff==0 → skip
     end
+
+    # --- A 2-week toy policy graph used by injection + selector tests. ---
+    function _toy_graph_inputs()
+        res  = [Nephrite.JadeReservoir("L", "SI", 0.0, 1000.0)]
+        stn  = Nephrite.HydroStation("g", 1e6, 1.0, [(0.0, 0.0), (1e6, 1e6)])
+        arcs = [Nephrite.Arc("L", "SEA", "g", 1e6)]
+        net  = Nephrite.HydroNetwork(res, arcs, Dict("g" => stn),
+                   Dict("g" => "BEN"), Dict("L" => ["SEA"]))
+        hubs = [Nephrite.Hub("BEN", "BEN2201", "Benmore", "SI")]
+        topo = Nephrite.Topology(hubs, Nephrite.Corridor[])
+        thermal = DataFrame(hub = ["BEN"], price = [200.0], mw = [1e6])
+        mustrun = DataFrame(hub = String[], mw = Float64[])
+        inp = Nephrite.DispatchInputs(topo, net, thermal, mustrun, NamedTuple[], 10000.0)
+        per96  = [Nephrite.Period("p", 1.0, Dict("BEN" => 100.0))]
+        per336 = [Nephrite.Period("t$i", 42.0, Dict("BEN" => 100.0)) for i in 1:4]
+        wk = Nephrite.WeekInputs(per96, per336, inp, Dict("L" => 0.0))
+        weeks = [wk, wk]
+        term  = DataFrame(stored_energy = [0.0, 1e9], value = [0.0, 0.0])
+        anch  = (values = Dict("L" => 30.0),
+                 weights = Nephrite.anchor_weights(13, 2), weight = 1.0)
+        mi   = Nephrite.ModelInputs(weeks, net, Dict("L" => 500.0), term, anch)
+        scen = Dict(t => [Dict("L" => 0.0), Dict("L" => 200.0)] for t in 1:2)
+        return mi, scen
+    end
+
+    @testset "apply_wv_warmstart! adds the cut into the node value function" begin
+        mi, scen = _toy_graph_inputs()
+        graph = Nephrite.build_policy_graph(mi.weeks, mi.net, mi.initial_vol,
+                                            mi.terminal_wv, mi.anchor, scen)
+        lb   = Nephrite.sddp_lower_bound(mi.net, mi.terminal_wv)
+        cuts = Nephrite.wv_warmstart_cuts(mi.net, mi.initial_vol, mi.anchor.values,
+                                          mi.anchor.weights, lb)
+        @test !isempty(cuts)
+        n_before = length(graph[1].bellman_function.global_theta.cuts)
+        Nephrite.apply_wv_warmstart!(graph, cuts)
+        n_after = length(graph[1].bellman_function.global_theta.cuts)
+        @test n_after > n_before
+        @test isfinite(SDDP.calculate_bound(graph))
+    end
+
+    @testset "apply_wv_warmstart! is a no-op on empty cuts" begin
+        mi, scen = _toy_graph_inputs()
+        graph = Nephrite.build_policy_graph(mi.weeks, mi.net, mi.initial_vol,
+                                            mi.terminal_wv, mi.anchor, scen)
+        n_before = length(graph[1].bellman_function.global_theta.cuts)
+        g2 = Nephrite.apply_wv_warmstart!(graph, Dict{String,Any}[])
+        @test g2 === graph
+        @test length(graph[1].bellman_function.global_theta.cuts) == n_before
+    end
 end
