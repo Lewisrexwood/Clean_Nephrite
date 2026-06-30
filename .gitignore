@@ -3,3 +3,7 @@
 /data/history/
 /data/raw/
 *.log
+
+# SDDP infeasibility debug dumps (written to repo root on solver infeasibility)
+model_infeasible_*.json
+subproblem_*.mof.json

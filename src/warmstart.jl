@@ -35,14 +35,22 @@ function wv_warmstart_cuts(net::HydroNetwork, anchor_vol::Dict{String,Float64},
             c  = get(coeff, r.name, 0.0)
             wv = get(wv_values, r.name, 0.0)
             (c > 0 && wv != 0.0) || continue
+            slope = decay_weights[t] * (-wv * c * MWH_PER_MM3_PER_SP)
+            # Drop numerically-dead slopes: a coefficient this small (vs the ~1e6
+            # cuts elsewhere) is ~0 to the LP but widens the basis condition number
+            # and triggers SDDP's coefficient-range warning. Skipping keeps the
+            # injected cut clean without changing any meaningful slope.
+            abs(slope) < 1e-9 && continue
             key = "s[$(r.name)]"
-            coeffs[key] = decay_weights[t] * (-wv * c * MWH_PER_MM3_PER_SP)
+            coeffs[key] = slope
             state[key]  = get(anchor_vol, r.name, 0.0)
         end
         isempty(coeffs) && continue
         push!(cuts, Dict{String,Any}(
             "node" => string(t),
             "single_cuts" => Any[Dict{String,Any}(
+                # TODO(validity): height = lb makes these GUIDANCE cuts, not certified
+                # global under-estimators — revisit if :cuts/:both needs a trustworthy bound.
                 "intercept"    => lb,
                 "coefficients" => coeffs,
                 "state"        => state)],

@@ -47,6 +47,9 @@ import SDDP
                           Dict("L" => 0.0), [1.0], -10.0))                # WV == 0 → skip
         @test isempty(Nephrite.wv_warmstart_cuts(net, Dict("Z" => 300.0),
                           Dict("Z" => 40.0), [1.0], -10.0))               # only coeff==0 → skip
+        # near-zero (but nonzero) slope is dropped by the magnitude threshold
+        @test isempty(Nephrite.wv_warmstart_cuts(net, Dict("L" => 500.0),
+                          Dict("L" => 1e-20), [1.0], -10.0))
     end
 
     # --- A 2-week toy policy graph used by injection + selector tests. ---

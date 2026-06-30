@@ -12,6 +12,8 @@ mechanism. Select via `warm_start` on `run_model(engine=:sddp, ...)` or `solve_s
 | `:cuts`      | **Option A** — value-function cuts seeded at iteration 0 | shapes the cost-to-go directly |
 | `:both`      | A + C                                  | combined                                |
 
+`:both` stacks the same prior through *both* channels (objective anchor + value-function cuts), so it applies the strongest near-term conservation pressure.
+
 ## Option A — value-function cuts
 Each reservoir's prior WV becomes one linear cut per weekly node:
 `V(s) ≥ lb + Σ_r π_{r,t}·(s_r − s0_r)`, with slope
@@ -21,6 +23,8 @@ height equals `lb` (iteration-0 bound not inflated); below it the cut pre-instal
 "scarce water is expensive." These are **guidance** cuts, not certified global
 under-estimators — SDDP's own valid cuts dominate them during training. The demo
 prints cold-vs-warm bounds so any distortion is visible.
+
+Because these are *guidance* (not certified) cuts, the `lower_bound` reported for `:cuts`/`:both` is **diagnostic only — not a valid dual bound**. Use `:none` or `:anchor` when you need a trustworthy bound.
 
 > **Note:** the FINAL (terminal) stage is NOT seeded with a warm-start cut. Its
 > cost-to-go is structurally zero in a finite policy graph (no future stages), so
