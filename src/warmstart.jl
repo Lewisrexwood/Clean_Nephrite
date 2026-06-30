@@ -69,3 +69,23 @@ function apply_wv_warmstart!(graph::SDDP.PolicyGraph, cuts::Vector{Dict{String,A
     end
     return graph
 end
+
+"Copy of an anchor bundle with `weight = 0.0` (objective anchor off; values/weights kept)."
+_zero_weight_anchor(anchor) = merge(anchor, (weight = 0.0,))
+
+"""
+    _warmstart_plan(warm_start, anchor) -> (effective_anchor, inject_cuts::Bool)
+
+Resolve a warm-start selector into (a) the anchor bundle to build the graph with —
+the original (objective anchor ON) for `:anchor`/`:both`, else a zero-weight copy —
+and (b) whether to inject value-function cuts (`:cuts`/`:both`). Errors on any other
+symbol.
+"""
+function _warmstart_plan(warm_start::Symbol, anchor)
+    warm_start in (:none, :anchor, :cuts, :both) ||
+        error("solve_sddp: warm_start must be :none, :anchor, :cuts, or :both (got :$warm_start)")
+    use_anchor  = warm_start in (:anchor, :both)
+    inject_cuts = warm_start in (:cuts, :both)
+    eff = use_anchor ? anchor : _zero_weight_anchor(anchor)
+    return (eff, inject_cuts)
+end

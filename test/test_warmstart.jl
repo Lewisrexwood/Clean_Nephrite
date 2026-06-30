@@ -97,4 +97,34 @@ import SDDP
         @test g2 === graph
         @test length(graph[1].bellman_function.global_theta.cuts) == n_before
     end
+
+    @testset "_warmstart_plan / _zero_weight_anchor select mechanism correctly" begin
+        anch = (values = Dict("L" => 50.0), weights = [1.0, 0.5], weight = 1.0)
+
+        @test Nephrite._zero_weight_anchor(anch).weight == 0.0
+        @test Nephrite._zero_weight_anchor(anch).values === anch.values   # preserved
+        @test Nephrite._zero_weight_anchor(anch).weights == anch.weights
+
+        @test Nephrite._warmstart_plan(:none,   anch) == (Nephrite._zero_weight_anchor(anch), false)
+        @test Nephrite._warmstart_plan(:anchor, anch)[1].weight == 1.0
+        @test Nephrite._warmstart_plan(:anchor, anch)[2] == false
+        @test Nephrite._warmstart_plan(:cuts,   anch)[1].weight == 0.0
+        @test Nephrite._warmstart_plan(:cuts,   anch)[2] == true
+        @test Nephrite._warmstart_plan(:both,   anch)[1].weight == 1.0
+        @test Nephrite._warmstart_plan(:both,   anch)[2] == true
+        @test_throws ErrorException Nephrite._warmstart_plan(:bogus, anch)
+    end
+
+    @testset "solve_sddp runs all four warm_start modes and still yields finite FCF" begin
+        mi, scen = _toy_graph_inputs()
+        for mode in (:none, :anchor, :cuts, :both)
+            sr = Nephrite.solve_sddp(mi, scen; n_scenarios = 4, iteration_limit = 15,
+                                     seed = 1, warm_start = mode)
+            @test sr.policy isa SDDP.PolicyGraph
+            cfg = Nephrite.FcfExtractConfig([1, 2], 4, 13, 0.0)
+            fcf = Nephrite.extract_run_fcf(sr.policy, mi.net, mi.initial_vol,
+                                           sr.trajectories, Dict{String,Float64}(), cfg)
+            @test all(isfinite, fcf[1].curves["L"].water_value)
+        end
+    end
 end

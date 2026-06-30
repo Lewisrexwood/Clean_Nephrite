@@ -259,19 +259,35 @@ function price_scenarios(weeks::Vector{WeekInputs}, net::HydroNetwork,
 end
 
 """
-    solve_sddp(mi, inflow_scenarios; n_scenarios=100, iteration_limit=200, seed=1)
+    solve_sddp(mi, inflow_scenarios; n_scenarios=100, iteration_limit=200, seed=1, warm_start=:anchor)
         -> SddpResult
 
 Top-level orchestrator: build the policy graph from `mi`, train it, forward-
 simulate `n_scenarios`, and price each scenario through the 336-step subproblem.
+`warm_start` selects the prior-WV injection: `:none` (cold), `:anchor` (objective anchor, default), `:cuts` (value-function cuts), `:both`.
 """
 function solve_sddp(mi::ModelInputs, inflow_scenarios::Dict{Int,Vector{Dict{String,Float64}}};
-                    n_scenarios::Int = 100, iteration_limit::Int = 200, seed::Int = 1)
+                    n_scenarios::Int = 100, iteration_limit::Int = 200, seed::Int = 1,
+                    warm_start::Symbol = :anchor)
+    eff_anchor, inject_cuts = _warmstart_plan(warm_start, mi.anchor)
     graph = build_policy_graph(mi.weeks, mi.net, mi.initial_vol, mi.terminal_wv,
-                               mi.anchor, inflow_scenarios)
+                               eff_anchor, inflow_scenarios)
+    if inject_cuts
+        lb = sddp_lower_bound(mi.net, mi.terminal_wv)
+        # Skip the final-stage node: its Bellman function is identically 0
+        # (no future stages), so injecting a cut there causes infeasibility
+        # during the backward pass.  In production decay_weeks << nW so the
+        # final-node weight is already 0; this clip is only material for short
+        # toy/test runs.
+        nW = length(mi.weeks)
+        cut_weights = mi.anchor.weights[1:max(0, nW - 1)]
+        cuts = wv_warmstart_cuts(mi.net, mi.initial_vol, mi.anchor.values,
+                                 cut_weights, lb)
+        apply_wv_warmstart!(graph, cuts)
+    end
     train_policy!(graph; iteration_limit = iteration_limit, seed = seed)
-    lb = SDDP.calculate_bound(graph)
+    lb_bound = SDDP.calculate_bound(graph)
     traj, infl = simulate_policy(graph, n_scenarios; seed = seed)
     price_dist = price_scenarios(mi.weeks, mi.net, mi.initial_vol, traj, infl)
-    return SddpResult(lb, traj, price_dist, graph)
+    return SddpResult(lb_bound, traj, price_dist, graph)
 end
