@@ -78,8 +78,10 @@ import SDDP
         graph = Nephrite.build_policy_graph(mi.weeks, mi.net, mi.initial_vol,
                                             mi.terminal_wv, mi.anchor, scen)
         lb   = Nephrite.sddp_lower_bound(mi.net, mi.terminal_wv)
+        # Seed only the non-terminal node (weights[1:1] for this 2-week toy) — matches
+        # solve_sddp's [1:nW-1] clip; the terminal node has no cost-to-go to seed.
         cuts = Nephrite.wv_warmstart_cuts(mi.net, mi.initial_vol, mi.anchor.values,
-                                          mi.anchor.weights, lb)
+                                          mi.anchor.weights[1:1], lb)
         @test !isempty(cuts)
         n_before = length(graph[1].bellman_function.global_theta.cuts)
         Nephrite.apply_wv_warmstart!(graph, cuts)
