@@ -144,12 +144,16 @@ The height convention is a single documented constant, trivial to swap for a
 strictly-valid (looser) variant later.
 
 **Edge cases:**
-- Last node `t = nW`: its cost-to-go approximation has no successor stage (beyond
-  the horizon is handled in-stage by the terminal-value envelope), so a cut seeded
-  there is inert regardless of `decay_t`. We still write it for uniformity; it is a
-  harmless no-op. (Note: with `n_weeks < decay_weeks` — e.g. the 8-week quick
-  example vs `decay_weeks = 13` — `decay_t` is *not* ~0 at `nW`; inertness comes from
-  the missing successor, not from decay.)
+- Last node `t = nW`: its cost-to-go approximation has **no successor stage** (beyond
+  the horizon is handled in-stage by the terminal-value envelope, so the terminal
+  node's Bellman value is structurally 0). Seeding a cut there is **not** inert —
+  it forces a phantom positive cost-to-go and makes the SDDP backward-pass LP
+  **infeasible** (verified during implementation: `model_infeasible_node_<nW>`).
+  Therefore `solve_sddp` clips the per-stage weights to `[1:nW-1]`, excluding the
+  terminal node entirely. This is a true no-op in production (`n_weeks ≫ decay_weeks`,
+  so the terminal weight is already 0) and load-bearing only for short horizons
+  (e.g. the 8-week quick example, where the week-8 weight is ≈0.46). *(This corrects
+  the original assumption in this section that the terminal cut was a harmless no-op.)*
 - Empty `wv_values` (no offers): produces no cuts; `:cuts` degenerates to cold. Logged.
 
 ### SDDP.jl cut-file schema (target for `apply_wv_warmstart!`)
