@@ -16,6 +16,10 @@ Outputs land in `runs/<id>/`: `fcf_curves.csv` (per-reservoir offer curves) and
 `fcf_cuts.json` (the full FCF as SDDP cuts). A ready-made quick example is in
 `examples/quick_fcf/`. See `docs/FCF.md` for how to consume these.
 
+**FCF + SDDP water-value warm-start:** `docs/FCF_README.md` is the full guide — how to
+seed the policy with prior water values via the two options (`:cuts` value-function
+cuts vs. `:anchor` objective bias), how each works, and how to compare them.
+
 Storage state (NZ 2700 / SI 2200 GWh for the 2-year run) is a manual input — there
 is no automatable daily controlled-storage feed; change it in `scripts/get_fcf.jl`.
 
