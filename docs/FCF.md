@@ -1,9 +1,5 @@
 # The FCF (Future Cost Function) outputs
 
-> For the full workflow — including the two SDDP water-value **warm-start options**
-> (`:cuts` vs. `:anchor`) and how they work — see [FCF_README.md](FCF_README.md).
-> This page documents just the output file formats.
-
 `get_fcf.jl` writes two artifacts per run:
 
 ## 1. `fcf_curves.csv` — per-reservoir offer curves (the "diagonal")
