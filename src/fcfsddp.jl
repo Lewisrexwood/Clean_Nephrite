@@ -127,7 +127,9 @@ function extract_run_fcf(graph, net::HydroNetwork, initial_vol::Dict{String,Floa
 
     make_sampler = function (w::Int, joint::Dict{String,Float64})
         V = SDDP.ValueFunction(graph[w])
-        JuMP.set_optimizer(V, HiGHS.Optimizer)
+        # Pin V-eval to 1 HiGHS thread (same many-core spawn-overhead fix as training).
+        JuMP.set_optimizer(V, optimizer_with_attributes(HiGHS.Optimizer,
+                                                        "threads" => 1, "parallel" => "off"))
         return sddp_wv_sampler(V, coeff, refvol[w])
     end
 

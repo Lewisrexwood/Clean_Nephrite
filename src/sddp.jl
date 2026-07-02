@@ -43,7 +43,14 @@ and the JADE terminal-value envelope on the final stage.
 function build_policy_graph(weeks::Vector{WeekInputs}, net::HydroNetwork,
                             initial_vol::Dict{String,Float64}, terminal_wv::DataFrame,
                             anchor, inflow_scenarios::Dict{Int,Vector{Dict{String,Float64}}};
-                            optimizer = HiGHS.Optimizer)
+                            # Pin each stage-LP to 1 HiGHS thread.  HiGHS default threads=0
+                            # (= all cores) spawns ~ncores workers per solve; for the tiny
+                            # 96-period stage LP the spawn/sync overhead dwarfs the sub-ms
+                            # solve, and SDDP calls optimize! tens of thousands of times, so
+                            # on a many-core box this is an ~order-of-magnitude slowdown.
+                            # Mirrors the pricing-path pin (subproblem.jl:93-94).
+                            optimizer = optimizer_with_attributes(HiGHS.Optimizer,
+                                                                  "threads" => 1, "parallel" => "off"))
     nW     = length(weeks)
     res    = net.reservoirs
     rnames = [r.name for r in res]
